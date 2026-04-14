@@ -2,8 +2,8 @@ def get_clinic_info():
     return """
 Clinic Name: Coco Aesthetique
 Location: Seattle, WA
-Booking Link: https://yourbookinglink.com
-Hours: Mon-Fri 10am-6pm
+Booking Link: https://shmily.janeapp.com/
+Hours: Mon-Fri 10am-5pm
 """
 
 def get_treatments():

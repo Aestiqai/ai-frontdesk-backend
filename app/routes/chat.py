@@ -8,7 +8,7 @@ from app.leads import save_lead
 router = APIRouter()
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-BOOKING_LINK = "https://yourbookinglink.com"
+BOOKING_LINK = "https://shmily.janeapp.com/"
 
 class ChatRequest(BaseModel):
     message: str

@@ -5,110 +5,396 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AI Front Desk</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f7f7f7;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
+    * {
+      box-sizing: border-box;
     }
 
-    .chat-container {
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+      background: #f7f3f1;
+    }
+
+    .chat-bubble {
+      position: fixed;
+      right: 24px;
+      bottom: 24px;
+      width: 64px;
+      height: 64px;
+      border: none;
+      border-radius: 999px;
+      background: #111111;
+      color: white;
+      font-size: 26px;
+      cursor: pointer;
+      box-shadow: 0 14px 40px rgba(0, 0, 0, 0.2);
+    }
+
+    .chat-widget {
+      position: fixed;
+      right: 24px;
+      bottom: 100px;
       width: 380px;
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.12);
+      max-width: calc(100vw - 24px);
+      height: 620px;
+      max-height: calc(100vh - 130px);
+      background: #ffffff;
+      border-radius: 24px;
       overflow: hidden;
-      display: flex;
+      box-shadow: 0 24px 80px rgba(0, 0, 0, 0.18);
+      border: 1px solid rgba(0, 0, 0, 0.06);
+      display: none;
       flex-direction: column;
-      height: 600px;
+    }
+
+    .chat-widget.open {
+      display: flex;
     }
 
     .chat-header {
-      padding: 16px;
-      font-weight: bold;
-      border-bottom: 1px solid #eee;
+      padding: 18px 18px 14px;
+      background: linear-gradient(135deg, #111111, #2b2b2b);
+      color: white;
+    }
+
+    .chat-header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .chat-title {
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+    }
+
+    .close-btn {
+      background: transparent;
+      border: none;
+      color: white;
+      font-size: 22px;
+      cursor: pointer;
+      line-height: 1;
+    }
+
+    .chat-subtitle {
+      font-size: 13px;
+      line-height: 1.5;
+      color: rgba(255, 255, 255, 0.82);
+    }
+
+    .quick-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      padding: 12px 14px;
+      border-bottom: 1px solid #f0f0f0;
+      background: #fffdfc;
+    }
+
+    .quick-btn {
+      border: 1px solid #e7dfdb;
+      background: white;
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 13px;
+      cursor: pointer;
+      color: #333;
     }
 
     .chat-box {
       flex: 1;
-      padding: 16px;
       overflow-y: auto;
-      background: #fafafa;
+      padding: 16px;
+      background: linear-gradient(to bottom, #fcfbfa, #f7f4f2);
+    }
+
+    .message-row {
+      display: flex;
+      margin-bottom: 12px;
+    }
+
+    .message-row.user {
+      justify-content: flex-end;
+    }
+
+    .message-row.bot {
+      justify-content: flex-start;
     }
 
     .msg {
-      margin-bottom: 12px;
-      padding: 10px 12px;
-      border-radius: 10px;
-      max-width: 80%;
-      line-height: 1.4;
-      word-wrap: break-word;
+      max-width: 82%;
+      padding: 12px 14px;
+      border-radius: 18px;
+      line-height: 1.45;
+      font-size: 14px;
+      white-space: pre-wrap;
+      word-break: break-word;
     }
 
-    .user {
-      background: #e7f0ff;
-      margin-left: auto;
-      text-align: right;
+    .message-row.user .msg {
+      background: #111111;
+      color: white;
+      border-bottom-right-radius: 6px;
     }
 
-    .bot {
-      background: #f0f0f0;
-      margin-right: auto;
+    .message-row.bot .msg {
+      background: white;
+      color: #222;
+      border: 1px solid #ece7e3;
+      border-bottom-left-radius: 6px;
+    }
+
+    .typing {
+      display: inline-flex;
+      gap: 5px;
+      align-items: center;
+      min-height: 20px;
+    }
+
+    .typing span {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: #bbb;
+      display: inline-block;
+      animation: bounce 1.2s infinite ease-in-out;
+    }
+
+    .typing span:nth-child(2) {
+      animation-delay: 0.15s;
+    }
+
+    .typing span:nth-child(3) {
+      animation-delay: 0.3s;
+    }
+
+    @keyframes bounce {
+      0%, 80%, 100% {
+        transform: translateY(0);
+        opacity: 0.4;
+      }
+      40% {
+        transform: translateY(-4px);
+        opacity: 1;
+      }
+    }
+
+    .action-bar {
+      padding: 10px 14px 0;
+      background: white;
+    }
+
+    .booking-btn {
+      width: 100%;
+      border: none;
+      background: #d8b59a;
+      color: #111;
+      border-radius: 14px;
+      padding: 12px 14px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .lead-form {
+      display: none;
+      padding: 12px 14px;
+      border-top: 1px solid #f0f0f0;
+      background: white;
+      gap: 8px;
+      flex-direction: column;
+    }
+
+    .lead-form.show {
+      display: flex;
+    }
+
+    .lead-form input {
+      width: 100%;
+      padding: 11px 12px;
+      border-radius: 12px;
+      border: 1px solid #ddd;
+      font-size: 14px;
+      outline: none;
+    }
+
+    .lead-submit {
+      border: none;
+      background: #111111;
+      color: white;
+      border-radius: 12px;
+      padding: 12px;
+      font-size: 14px;
+      cursor: pointer;
     }
 
     .chat-input {
       display: flex;
       gap: 8px;
-      padding: 12px;
-      border-top: 1px solid #eee;
+      padding: 12px 14px 14px;
+      border-top: 1px solid #f0f0f0;
       background: white;
     }
 
     .chat-input input {
       flex: 1;
-      padding: 12px;
-      font-size: 16px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
+      padding: 13px 14px;
+      border-radius: 14px;
+      border: 1px solid #ddd;
+      font-size: 15px;
       outline: none;
     }
 
-    .chat-input button {
-      padding: 12px 16px;
-      font-size: 16px;
+    .send-btn {
       border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      background: black;
+      background: #111111;
       color: white;
+      border-radius: 14px;
+      padding: 0 18px;
+      font-size: 14px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    @media (max-width: 640px) {
+      .chat-widget {
+        right: 12px;
+        left: 12px;
+        bottom: 88px;
+        width: auto;
+        height: 72vh;
+      }
+
+      .chat-bubble {
+        right: 16px;
+        bottom: 16px;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="chat-container">
-    <div class="chat-header">AI Front Desk</div>
-    <div class="chat-box" id="chatBox">
-      <div class="msg bot">Hi! How can I help you today?</div>
+  <button class="chat-bubble" onclick="toggleWidget()">💬</button>
+
+  <div class="chat-widget" id="chatWidget">
+    <div class="chat-header">
+      <div class="chat-header-top">
+        <div class="chat-title">Coco Aesthetique</div>
+        <button class="close-btn" onclick="toggleWidget()">×</button>
+      </div>
+      <div class="chat-subtitle">
+        Hi — I’m your AI Front Desk. I can help with treatments, booking, and general questions.
+      </div>
     </div>
+
+    <div class="quick-actions">
+      <button class="quick-btn" onclick="quickSend('How much is Botox?')">Botox pricing</button>
+      <button class="quick-btn" onclick="quickSend('I have acne scars')">Acne scars</button>
+      <button class="quick-btn" onclick="quickSend('I want to book a consultation')">Book consult</button>
+    </div>
+
+    <div class="chat-box" id="chatBox">
+      <div class="message-row bot">
+        <div class="msg">
+          Welcome to Coco Aesthetique. How can I help you today?
+        </div>
+      </div>
+    </div>
+
+    <div class="action-bar">
+      <button class="booking-btn" onclick="openBooking()">Book Consultation</button>
+    </div>
+
+    <div class="lead-form" id="leadForm">
+      <input id="leadName" type="text" placeholder="Your name" />
+      <input id="leadPhone" type="text" placeholder="Phone number" />
+      <input id="leadConcern" type="text" placeholder="What are you interested in?" />
+      <button class="lead-submit" onclick="submitLead()">Request Follow-Up</button>
+    </div>
+
     <div class="chat-input">
       <input id="messageInput" type="text" placeholder="Type your message..." />
-      <button onclick="sendMessage()">Send</button>
+      <button class="send-btn" onclick="sendMessage()">Send</button>
     </div>
   </div>
 
   <script>
     const API_URL = "https://ai-frontdesk-backend-production.up.railway.app/chat/";
+    const BOOKING_URL = "https://shmily.janeapp.com/";
+
+    function toggleWidget() {
+      document.getElementById("chatWidget").classList.toggle("open");
+      setTimeout(() => {
+        const input = document.getElementById("messageInput");
+        if (document.getElementById("chatWidget").classList.contains("open")) {
+          input.focus();
+        }
+      }, 100);
+    }
 
     function addMessage(text, type) {
       const chatBox = document.getElementById("chatBox");
+      const row = document.createElement("div");
+      row.className = "message-row " + type;
+
       const msg = document.createElement("div");
-      msg.className = "msg " + type;
+      msg.className = "msg";
       msg.textContent = text;
-      chatBox.appendChild(msg);
+
+      row.appendChild(msg);
+      chatBox.appendChild(row);
       chatBox.scrollTop = chatBox.scrollHeight;
+      return row;
+    }
+
+    function showTyping() {
+      const chatBox = document.getElementById("chatBox");
+      const row = document.createElement("div");
+      row.className = "message-row bot";
+      row.id = "typingRow";
+
+      const msg = document.createElement("div");
+      msg.className = "msg";
+
+      const typing = document.createElement("div");
+      typing.className = "typing";
+      typing.innerHTML = "<span></span><span></span><span></span>";
+
+      msg.appendChild(typing);
+      row.appendChild(msg);
+      chatBox.appendChild(row);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function hideTyping() {
+      const typingRow = document.getElementById("typingRow");
+      if (typingRow) typingRow.remove();
+    }
+
+    function quickSend(text) {
+      document.getElementById("messageInput").value = text;
+      sendMessage();
+    }
+
+    function openBooking() {
+      window.open(BOOKING_URL, "_blank");
+    }
+
+    function maybeShowLeadForm(message, reply) {
+      const text = (message + " " + reply).toLowerCase();
+      const shouldShow =
+        text.includes("follow up") ||
+        text.includes("follow-up") ||
+        text.includes("leave your name") ||
+        text.includes("leave your contact") ||
+        text.includes("phone or email") ||
+        text.includes("not ready");
+
+      if (shouldShow) {
+        document.getElementById("leadForm").classList.add("show");
+      }
     }
 
     async function sendMessage() {
@@ -119,6 +405,7 @@
 
       addMessage(message, "user");
       input.value = "";
+      showTyping();
 
       try {
         const response = await fetch(API_URL, {
@@ -126,13 +413,57 @@
           headers: {
             "Content-Type": "application/json"
           },
-          body: JSON.stringify({ message: message })
+          body: JSON.stringify({ message })
         });
 
         const data = await response.json();
-        addMessage(data.reply || "No reply received.", "bot");
+        hideTyping();
+        const reply = data.reply || "I’m sorry, I wasn’t able to respond.";
+        addMessage(reply, "bot");
+        maybeShowLeadForm(message, reply);
       } catch (error) {
-        addMessage("Error connecting to AI backend.", "bot");
+        hideTyping();
+        addMessage("Sorry — I’m having trouble connecting right now.", "bot");
+        console.error(error);
+      }
+    }
+
+    async function submitLead() {
+      const name = document.getElementById("leadName").value.trim();
+      const phone = document.getElementById("leadPhone").value.trim();
+      const concern = document.getElementById("leadConcern").value.trim();
+
+      if (!name || !phone) {
+        addMessage("Please enter your name and phone number so our team can follow up.", "bot");
+        return;
+      }
+
+      showTyping();
+
+      try {
+        const response = await fetch(API_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            message: concern || "Lead request",
+            name: name,
+            phone: phone,
+            concern: concern
+          })
+        });
+
+        const data = await response.json();
+        hideTyping();
+        addMessage(data.reply || "Thanks! Our team will follow up with you soon.", "bot");
+        document.getElementById("leadForm").classList.remove("show");
+        document.getElementById("leadName").value = "";
+        document.getElementById("leadPhone").value = "";
+        document.getElementById("leadConcern").value = "";
+      } catch (error) {
+        hideTyping();
+        addMessage("Sorry — we couldn’t save your information right now.", "bot");
         console.error(error);
       }
     }
